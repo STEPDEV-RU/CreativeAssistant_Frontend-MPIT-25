@@ -1,11 +1,27 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-100 p-6">
     <div class="prompt-container">
-      <h1>Creative Assistant</h1>
-      <textarea v-model="prompt" placeholder="Введите ваш промпт..."></textarea>
-      <button @click="submitPrompt" :disabled="loading || !prompt.trim()">
-        {{ loading ? "Отправка..." : "Отправить" }}
-      </button>
+
+      <!-- Если не грузится — показываем форму -->
+      <div v-if="!loading">
+        <h1>Creative Assistant</h1>
+        <textarea v-model="prompt" placeholder="Введите ваш промпт..."></textarea>
+        <button @click="submitPrompt" :disabled="!prompt.trim()">
+          Отправить
+        </button>
+      </div>
+
+      <!-- Если грузится — показываем спиннер -->
+      <div v-else class="loading-wrapper">
+        <div class="loader"></div>
+        <p class="loading-text">
+          Генерация изображения...<br />
+          <span class="loading-sub">Это может занять 1–2 минуты</span>
+        </p>
+      </div>
+
+      <!-- Показываем изображение после генерации -->
+      <img v-if="imageUrl" :src="imageUrl" class="result-image"  alt=""/>
     </div>
 
   </div>
@@ -26,6 +42,7 @@ const submitPrompt = async () => {
 
   try {
     const response = await fetch("http://localhost:5000/generate", {
+    //const response = await fetch("http://192.168.137.1:5000/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ prompt: prompt.value }),
@@ -135,6 +152,50 @@ body {
 .prompt-container button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+/* Анимация загрузки */
+.loading-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0;
+}
+
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #e5e7eb;
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Текст во время загрузки */
+.loading-text {
+  text-align: center;
+  font-size: 16px;
+  color: #374151;
+  line-height: 1.4;
+}
+
+.loading-sub {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Стиль результата */
+.result-image {
+  margin-top: 24px;
+  width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  border: 1px solid #e5e7eb;
 }
 </style>
 
